@@ -84,6 +84,7 @@ namespace SystemTrayToolBar
 
             AddSeparatorToContextMenu(contextMenuStrip);
             AddUpdateToContextMenu(contextMenuStrip, toolbarPath);
+            AddOpenInFileExplorerToContextMenu(contextMenuStrip, toolbarPath);
             AddExitToContextMenu(contextMenuStrip);
         }
 
@@ -95,7 +96,7 @@ namespace SystemTrayToolBar
 
             foreach (var shFileInfo in fileInfoList)
             {
-                contextMenuStrip.Items.Add(shFileInfo.Name, shFileInfo.Icon.ToBitmap(), ExecuteEventHandler(shFileInfo));
+                contextMenuStrip.Items.Add(shFileInfo.Name, shFileInfo.Icon.ToBitmap(), ExecuteEventHandler(shFileInfo.FilePath));
             }
         }
 
@@ -118,31 +119,30 @@ namespace SystemTrayToolBar
 
                 foreach (var shFileInfo in toolBarFileInfoList)
                 {
-                    menu.DropDownItems.Add(shFileInfo.Name, shFileInfo.Icon.ToBitmap(), ExecuteEventHandler(shFileInfo));
+                    menu.DropDownItems.Add(shFileInfo.Name, shFileInfo.Icon.ToBitmap(), ExecuteEventHandler(shFileInfo.FilePath));
                 }
             }
         }
 
-        private EventHandler ExecuteEventHandler(ShellFileInfo shFileInfo)
+        private static EventHandler ExecuteEventHandler(string path)
         {
-            return new EventHandler((s, e) => ShellFileExecuter.ExecuteFile(shFileInfo.FilePath));
+            return new EventHandler((s, e) => ShellFileExecuter.ExecuteFile(path));
         }
 
         private NotifyIcon BuildToolbarFolderNotFoundTrayIcon(DirectoryInfo rootDirInfo)
         {
             var contextMenuStrip = new ContextMenuStrip();
             const string trayIconName = "Toolbar";
-            var trayIcon = new NotifyIcon()
+            var trayIcon = new NotifyIcon
             {
                 Icon = Resource.Folder,
                 ContextMenuStrip = contextMenuStrip,
                 Visible = true,
                 Text = trayIconName,
+                BalloonTipTitle = "Root toolbar folder doesn't exist",
+                BalloonTipText = $"Add a '{ToolbarFolderName}' folder to your user profile folder. The full path is: {rootDirInfo.FullName}. Each folder located in the '{ToolbarFolderName}' folder will become a toolbar with it's own icon in the system tray.",
+                BalloonTipIcon = ToolTipIcon.Error
             };
-
-            trayIcon.BalloonTipTitle = "Root toolbar folder doesn't exist";
-            trayIcon.BalloonTipText = $"Add a '{ToolbarFolderName}' folder to your user profile folder. The full path is: {rootDirInfo.FullName}. Each folder located in the '{ToolbarFolderName}' folder will become a toolbar with it's own icon in the system tray.";
-            trayIcon.BalloonTipIcon = ToolTipIcon.Error;
             trayIcon.MouseClick += TrayIcon_ShowBalloon;
 
             contextMenuStrip.Items.Add("Root toolbar folder doesn't exist").Enabled = false;
@@ -175,6 +175,13 @@ namespace SystemTrayToolBar
             var updateMenu = new ToolStripMenuItem("&Update") { Tag = leftButtonOnlyTag };
             updateMenu.Click += new EventHandler((s, e) => BuildToolbarContextMenuStrip(contextMenuStrip, toolbarPath));
             contextMenuStrip.Items.Add(updateMenu);
+        }
+
+        private void AddOpenInFileExplorerToContextMenu(ContextMenuStrip contextMenuStrip, string toolbarPath)
+        {
+            var openExplorerMenu = new ToolStripMenuItem("&Open in File Explorer") { Tag = leftButtonOnlyTag };
+            openExplorerMenu.Click += ExecuteEventHandler(toolbarPath);
+            contextMenuStrip.Items.Add(openExplorerMenu);
         }
 
         private void AddExitToContextMenu(ContextMenuStrip contextMenuStrip)
