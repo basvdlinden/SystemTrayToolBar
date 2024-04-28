@@ -35,17 +35,19 @@ namespace SystemTrayToolBar
         [DllImport("shell32.dll", SetLastError = true)]
         private static extern bool ShellExecuteEx(ref ShellExecuteInfo lpExecInfo);
 
-        public static void ExecuteFile(string filePath)
+        /// <summary>
+        /// Shell execute the file. A dialog will be shown when the filePath references a file that doesn't exist.
+        /// </summary>
+        /// <param name="filePath">Path to file to shell execute</param>
+        /// <returns></returns>
+        public static bool ExecuteFile(string filePath)
         {
             var sei = new ShellExecuteInfo();
             sei.Size = Marshal.SizeOf(sei);
             sei.Verb = "open";
             sei.File = filePath;
             sei.Show = SW_NORMAL;
-            if (!ShellExecuteEx(ref sei))
-            {
-                throw new System.ComponentModel.Win32Exception($"Failed to execute {filePath}");
-            }
+            return ShellExecuteEx(ref sei);
         }
     }
 }
