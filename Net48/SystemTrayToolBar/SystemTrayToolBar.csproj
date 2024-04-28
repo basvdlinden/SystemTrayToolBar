@@ -8,9 +8,9 @@
     <ForceDesignerDpiUnaware>true</ForceDesignerDpiUnaware>
     <ApplicationIcon>Resources\Folder.ico</ApplicationIcon>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-    <Version>1.0.0.0</Version>
-    <FileVersion>1.0.0.0</FileVersion>
-    <InformationalVersion>1.0.0.0.3</InformationalVersion>
+    <Version>1.0.0</Version>
+    <FileVersion>1.0.0</FileVersion>
+    <InformationalVersion>1.0.0.4</InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
