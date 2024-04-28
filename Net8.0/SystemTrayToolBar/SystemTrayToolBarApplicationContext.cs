@@ -13,13 +13,20 @@ internal class SystemTrayToolBarApplicationContext : ApplicationContext
         var rootDirInfo = new DirectoryInfo(Path.Combine(userProfileDirectory, ToolbarFolderName));
         if (!rootDirInfo.Exists)
         {
-            var trayIcon = BuildToolbarFolderNotFoundTrayIcon(rootDirInfo);
+            var trayIcon = BuildToolbarFolderErrorIcon(rootDirInfo, "Root toolbar folder doesn't exist");
             trayIconList.Add(trayIcon);
             return;
         }
         else
         {
             var toolbarDirInfos = rootDirInfo.GetDirectories();
+
+            if (toolbarDirInfos.Length == 0)
+            {
+                var trayIcon = BuildToolbarFolderErrorIcon(rootDirInfo, "Root toolbar folder is empty");
+                trayIconList.Add(trayIcon);
+                return;
+            }
 
             foreach (var dirInfo in toolbarDirInfos)
             {
@@ -122,7 +129,7 @@ internal class SystemTrayToolBarApplicationContext : ApplicationContext
         return new((_, _) => ShellFileExecuter.ExecuteFile(path));
     }
 
-    private NotifyIcon BuildToolbarFolderNotFoundTrayIcon(DirectoryInfo rootDirInfo)
+    private NotifyIcon BuildToolbarFolderErrorIcon(DirectoryInfo rootDirInfo, string title)
     {
         var contextMenuStrip = new ContextMenuStrip();
         const string trayIconName = "Toolbar";
@@ -132,13 +139,13 @@ internal class SystemTrayToolBarApplicationContext : ApplicationContext
             ContextMenuStrip = contextMenuStrip,
             Visible = true,
             Text = trayIconName,
-            BalloonTipTitle = "Root toolbar folder doesn't exist",
-            BalloonTipText = $"Add a '{ToolbarFolderName}' folder to your user profile folder. The full path is: {rootDirInfo.FullName}. Each folder located in the '{ToolbarFolderName}' folder will become a toolbar with it's own icon in the system tray.",
+            BalloonTipTitle = title,
+            BalloonTipText = $"Root toolbar folder path: {rootDirInfo.FullName}. Each sub-folders will be shown as icon in the system tray.",
             BalloonTipIcon = ToolTipIcon.Error
         };
         trayIcon.MouseClick += TrayIcon_ShowBalloon;
 
-        contextMenuStrip.Items.Add("Root toolbar folder doesn't exist").Enabled = false;
+        contextMenuStrip.Items.Add(title).Enabled = false;
 
         AddSeparatorToContextMenu(contextMenuStrip);
         AddExitToContextMenu(contextMenuStrip);
